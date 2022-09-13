@@ -3,10 +3,150 @@
 
 
 
+# 1. build 및 실행
+
+
+```sh
+
+# 기 생성 패키지 삭제
+$ mvn clean
+
+
+# 패키지 삭제
+$ mvn package -DskipTests 
+
+
+# package
+$ java -jar target\sb1-0.0.1-SNAPSHOT.jar --job.name=textJob1 date=20220912 v=3
+
+
+```
 
 
 
-# 1. Meta table (4.3.x)
+# 2. docker image build
+
+link : https://spring.io/blog/2021/01/27/spring-batch-on-kubernetes-efficient-batch-processing-at-scale
+
+
+```sh
+
+$ mvn package -DskipTests
+
+$ mvn spring-boot:build-image -Dspring-boot.build-image.imageName=ssongman/sb1
+
+
+```
+
+
+
+
+
+# 3. jib Build
+
+```sh
+
+$ mvn compile jib:build
+
+
+# docker daemon 으로 build - m2 cache 만 받으면 30초 소요
+$ mvn compile jib:dockerBuild
+
+$ mvn compile jib:podmanBuild
+
+```
+
+
+
+
+# 4. docker 로 실행
+
+
+## 1) board1 실행
+```sh
+
+$ docker run --name sb1 ssongman/sb1:latest
+
+
+
+$ docker run \
+   -e SPRING_DATASOURCE_URL=jdbc:mysql://192.168.1.53:3306/test \
+   -e SPRING_DATASOURCE_USERNAME=root \
+   -e SPRING_DATASOURCE_PASSWORD=root \
+   -e SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver \
+   ssongman/sb1:latest \
+   fileName=https://raw.githubusercontent.com/benas/spring-batch-lab/master/blog/spring-batch-kubernetes/data/sample1.csv
+   
+   
+   
+   
+
+
+
+
+# 1) 조회
+curl -i localhost:8081/board/list
+
+# 2) 조회: 특정 index 조회
+curl -i localhost:8081/board/1
+```
+
+
+
+
+
+## 2) [참고]podman으로 실행
+```sh
+
+$ podman run -d --name board -p 8081:8080 docker.io/ssongman/sb1
+
+
+
+$ podman run \
+   -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-svr:3306/SongTest \
+   -e SPRING_DATASOURCE_USERNAME=root \
+   -e SPRING_DATASOURCE_PASSWORD=rootpass \
+   -e SPRING_DATASOURCE_DRIVER-CLASS-NAME=com.mysql.cj.jdbc.Driver \
+   ssongman/sb1:latest
+   
+
+$ podman run --name sb1 --network phpmyadmin-network \
+   -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-svr:3306/SongTest \
+   -e SPRING_DATASOURCE_USERNAME=root \
+   -e SPRING_DATASOURCE_PASSWORD=rootpass \
+   --entrypoint java - ssongman/sb1:latest --job.name=textJob1 date=20220912 v=3
+   
+
+$ podman run --name sb1 --network phpmyadmin-network --rm \
+   -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-svr:3306/SongTest \
+   -e SPRING_DATASOURCE_USERNAME=root \
+   -e SPRING_DATASOURCE_PASSWORD=rootpass \
+   ssongman/sb1:latest --job.name=textJob1 date=20220912 v=3
+   
+
+
+$ podman rm -f sb1
+
+ podman run --rm --name sb1 -it --entrypoint bash ssongman/sb1:latest
+ 
+ 
+
+```
+
+
+
+# 4. kubernetes 로 실행
+```sh
+$ kubectl -n song create board --image=ssongman/board
+```
+
+
+
+
+
+
+
+# 5. Meta table (spring-batch ver.4.3.x)
 
 
 ## 1) schema-oracle.sql
@@ -241,17 +381,6 @@ DROP TABLE IF EXISTS BATCH_JOB_SEQ;
 ```
 
 
-
-
-# 2. 실행방법
-
-
-```sh
-
-java -jar app.jar --job.name=textJob1 date=20220912 v=3
-
-
-```
 
 
 
