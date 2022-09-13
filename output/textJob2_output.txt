@@ -1,0 +1,10 @@
+OneDto(one=1==1)_item
+OneDto(one=2==2)_item
+OneDto(one=3==3)_item
+OneDto(one=4==4)_item
+OneDto(one=5==5)_item
+OneDto(one=6==6)_item
+OneDto(one=7==7)_item
+OneDto(one=8==8)_item
+OneDto(one=9==9)_item
+OneDto(one=10==10)_item
